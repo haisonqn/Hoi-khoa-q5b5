@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hội Khóa Q5B5 - Kỷ Niệm 25 Năm Ra Trường</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-wide">HỘI KHÓA Q5B5</h1>
+                <p class="text-xs sm:text-sm text-blue-100">Kỷ niệm 25 năm ra trường - Ngày 24/10/2026</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="openMapModal()" class="bg-blue-600 hover:bg-blue-800 text-xs px-3 py-1.5 rounded-lg border border-blue-400 flex items-center gap-1 shadow-sm">
+                    <i class="fas fa-map-marked-alt"></i> Sơ đồ Resort
+                </button>
+                <a href="https://drive.google.com/drive/folders/1D5cFDkI8ZexsKqUxWgi1kO9OUnYPB1Ov" target="_blank" class="bg-blue-600 hover:bg-blue-800 text-xs px-3 py-1.5 rounded-lg border border-blue-400 flex items-center gap-1 shadow-sm">
+                    <i class="fas fa-images"></i> Album Ảnh kỷ niệm
+                </a>
+            </div>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <nav class="bg-white text-slate-600 shadow-inner border-b">
+            <div class="max-w-5xl mx-auto flex justify-around text-sm font-medium">
+                <button onclick="switchTab('timeline')" id="tab-timeline" class="py-3 px-4 w-full text-center active-tab">
+                    <i class="fas fa-clock mr-1.5"></i> Lịch trình
+                </button>
+                <button onclick="switchTab('rooms')" id="tab-rooms" class="py-3 px-4 w-full text-center">
+                    <i class="fas fa-bed mr-1.5"></i> Tra cứu phòng nghỉ
+                </button>
+                <button onclick="switchTab('contacts')" id="tab-contacts" class="py-3 px-4 w-full text-center">
+                    <i class="fas fa-headset mr-1.5"></i> Thông tin hỗ trợ
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- TAB 1: LỊCH TRÌNH CHƯƠNG TRÌNH (MẶC ĐỊNH) -->
+        <section id="sec-timeline" class="space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <h2 class="text-lg font-bold text-blue-800 mb-1"><i class="fas fa-calendar-alt text-blue-600 mr-2"></i>Chương Trình Kỷ Niệm 25 Năm Ra Trường</h2>
+                    <p class="text-xs text-slate-500">Thứ Bảy, ngày 24/10/2026 | Địa điểm: Trường & Asean Resort</p>
+                </div>
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <span id="timeline-sync-status"><i class="fas fa-sync-alt fa-spin text-blue-600"></i> Đang kết nối...</span>
+                    <button onclick="loadTimelineRealtime()" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
+                        <i class="fas fa-redo-alt"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative border-l-2 border-blue-300 ml-3 pl-4 space-y-5" id="timelineContainer">
+                <div class="text-slate-400 text-sm py-4">Đang tải lịch trình từ Google Sheets...</div>
+            </div>
+        </section>
+
+        <!-- TAB 2: TRA CỨU PHÒNG NGHỈ -->
+        <section id="sec-rooms" class="hidden space-y-4">
+            <!-- Thẻ thống kê -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-medium">Tổng số thành viên</p>
+                    <p class="text-xl font-bold text-blue-700" id="stat-total">0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-medium">Đã xếp phòng</p>
+                    <p class="text-xl font-bold text-green-600" id="stat-assigned">0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-medium">Chưa xếp phòng</p>
+                    <p class="text-xl font-bold text-amber-600" id="stat-unassigned">0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-medium">Hiển thị hiện tại</p>
+                    <p class="text-xl font-bold text-indigo-600" id="stat-showing">0</p>
+                </div>
+            </div>
+
+            <!-- Bộ lọc & Tìm kiếm -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-grow">
+                    <input type="text" id="roomSearchInput" oninput="filterRooms()" placeholder="Tìm tên (có dấu/không dấu), số điện thoại, số phòng..." 
+                           class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <i class="fas fa-search absolute left-3 top-3.5 text-slate-400"></i>
+                </div>
+                <div class="sm:w-48">
+                    <select id="classFilter" onchange="filterRooms()" class="w-full py-2.5 px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        <option value="">Tất cả các lớp</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Trạng thái cập nhật -->
+            <div class="flex justify-between items-center px-1 text-xs text-slate-500">
+                <span id="room-sync-status"><i class="fas fa-sync-alt fa-spin mr-1 text-blue-600"></i>Đang kết nối dữ liệu...</span>
+                <button onclick="loadRoomsRealtime()" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
+                    <i class="fas fa-redo-alt"></i> Làm mới
+                </button>
+            </div>
+
+            <!-- Bảng danh sách phòng -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto max-h-[600px]">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b sticky top-0 shadow-sm z-10">
+                            <tr>
+                                <th class="px-3 py-3 text-center">STT</th>
+                                <th class="px-4 py-3">Họ và tên</th>
+                                <th class="px-3 py-3">Giới tính</th>
+                                <th class="px-3 py-3">Lớp</th>
+                                <th class="px-3 py-3">Số điện thoại</th>
+                                <th class="px-4 py-3 text-center bg-blue-50 text-blue-800">Số phòng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roomTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-slate-400 font-medium">Đang tải danh sách phòng...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: THÔNG TIN HỖ TRỢ -->
+        <section id="sec-contacts" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <h2 class="text-lg font-bold text-blue-800 mb-1"><i class="fas fa-headset text-blue-600 mr-2"></i>Danh Bạ Thông Tin Hỗ Trợ</h2>
+                    <p class="text-xs text-slate-500">Vui lòng liên hệ trực tiếp các đầu mối khi cần hỗ trợ thông tin hoặc sự cố</p>
+                </div>
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <span id="contact-sync-status"><i class="fas fa-sync-alt fa-spin text-blue-600"></i> Đang kết nối...</span>
+                    <button onclick="loadContactsRealtime()" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
+                        <i class="fas fa-redo-alt"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="contactGrid">
+                <div class="text-slate-400 text-sm py-4 col-span-2">Đang tải danh bạ hỗ trợ...</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal hiển thị Sơ đồ Resort -->
+    <div id="mapModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-3 bg-blue-700 text-white flex justify-between items-center">
+                <h3 class="font-bold text-sm"><i class="fas fa-map-marked-alt mr-2"></i>Sơ đồ Asean Resort</h3>
+                <button onclick="closeMapModal()" class="text-white hover:bg-blue-800 px-2.5 py-1 rounded-lg text-lg">&times;</button>
+            </div>
+            <div class="p-2 overflow-auto flex-grow text-center bg-slate-100">
+                <img id="mapImage" src="https://drive.google.com/thumbnail?id=1ejwBAeyNqAjSRY2Aj0D50WkK0Rw1LNXq&sz=w1200" alt="Sơ đồ Asean Resort" class="max-w-full h-auto mx-auto rounded shadow">
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 text-xs text-center py-4 mt-auto">
+        <p>© 2026 Hội khóa Q5B5 - Kỷ niệm 25 năm ra trường</p>
+    </footer>
+
+    <!-- SCRIPT LOGIC VÀ KẾT NỐI REAL-TIME -->
+    <script>
+        const ROOM_SHEET_ID = '1OMIztrQ9h2vRzfTw8jcfpqDYx6JzTjRySL0Yyz2s_rQ';
+        const TIMELINE_SHEET_ID = '1V739Glbh4VdJRisnUZ8LSojoqYwrYOr53aYNgkerL60';
+        const CONTACT_SHEET_ID = '1d5j-AhL1zNiFQw7e5Eu698PWTkTS7Ptyv5wGVHDy8-g';
+
+        let allMembers = [];
+        let timelineData = [];
+        let contactsData = [];
+
+        // Hàm loại bỏ dấu tiếng Việt để phục vụ tìm kiếm không dấu
+        function removeVietnameseTones(str) {
+            if (!str) return '';
+            str = str.toLowerCase();
+
+            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+            str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+            str = str.replace(/đ/g, "d");
+            str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); 
+            str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
+            return str.trim();
+        }
+
+        // --- 1. XỬ LÝ LỊCH TRÌNH REALTIME ---
+        function handleTimelineSheetData(json) {
+            const statusEl = document.getElementById('timeline-sync-status');
+            try {
+                const rows = json.table.rows;
+                timelineData = [];
+                
+                rows.forEach(row => {
+                    const c = row.c;
+                    if (c && (c[0] || c[1])) {
+                        const time = c[0] && c[0].v ? String(c[0].v).trim() : '';
+                        const title = c[1] && c[1].v ? String(c[1].v).trim() : '';
+                        const location = c[2] && c[2].v ? String(c[2].v).trim() : '';
+                        
+                        if (title !== '' && time !== 'THỜI GIAN') {
+                            timelineData.push({ time, title, location });
+                        }
+                    }
+                });
+
+                if (timelineData.length > 0) {
+                    renderTimeline(timelineData);
+                    const now = new Date();
+                    statusEl.innerHTML = `<i class="fas fa-check-circle text-green-600"></i> Cập nhật ${now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}`;
+                } else {
+                    statusEl.innerHTML = `<i class="fas fa-exclamation-triangle text-amber-600"></i> Trống`;
+                }
+            } catch (err) {
+                console.error("Lỗi xử lý Lịch trình:", err);
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600"></i> Lỗi dữ liệu`;
+            }
+        }
+
+        function loadTimelineRealtime() {
+            const statusEl = document.getElementById('timeline-sync-status');
+            statusEl.innerHTML = `<i class="fas fa-sync-alt fa-spin text-blue-600"></i> Đang tải...`;
+
+            const oldScript = document.getElementById('gviz-timeline-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'gviz-timeline-script';
+            script.src = `https://docs.google.com/spreadsheets/d/${TIMELINE_SHEET_ID}/gviz/tq?tqx=responseHandler:handleTimelineSheetData`;
+            script.onerror = function() {
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600"></i> Lỗi kết nối`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function renderTimeline(data) {
+            const container = document.getElementById('timelineContainer');
+            if (!data || data.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-sm">Chưa có thông tin lịch trình.</p>`;
+                return;
+            }
+
+            container.innerHTML = data.map(item => `
+                <div class="relative group">
+                    <div class="absolute -left-[23px] top-1.5 w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow"></div>
+                    <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm hover:border-blue-300 transition">
+                        ${item.time ? `<span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${item.time}</span>` : ''}
+                        <h3 class="font-semibold text-slate-800 text-sm ${item.time ? 'mt-1' : ''}">${item.title}</h3>
+                        ${item.location ? `<p class="text-xs text-slate-500 mt-0.5"><i class="fas fa-map-marker-alt text-red-500 mr-1"></i>${item.location}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- 2. XỬ LÝ DANH SÁCH PHÒNG REALTIME & TÌM KIẾM THÔNG MINH ---
+        function handleRoomSheetData(json) {
+            const statusEl = document.getElementById('room-sync-status');
+            try {
+                const rows = json.table.rows;
+                allMembers = rows.map((row, index) => {
+                    const c = row.c;
+                    const name = c[1] && c[1].v ? String(c[1].v).trim() : '';
+                    const className = c[3] && c[3].v ? String(c[3].v).trim() : '';
+                    const phone = c[4] && c[4].v && String(c[4].v) !== '0' ? String(c[4].v).trim() : '';
+                    const room = c[5] && c[5].v ? String(c[5].v).trim() : '';
+
+                    return {
+                        stt: c[0] && c[0].v ? c[0].v : index + 1,
+                        name: name,
+                        gender: c[2] && c[2].v ? String(c[2].v).trim() : '',
+                        class: className,
+                        phone: phone,
+                        room: room,
+                        // Tạo trường tìm kiếm không dấu tối ưu sẵn
+                        searchIndex: removeVietnameseTones(`${name} ${className} ${phone} ${room}`)
+                    };
+                }).filter(item => item.name && item.name !== 'Họ và tên');
+
+                if (allMembers.length > 0) {
+                    initClassDropdown();
+                    filterRooms();
+                    const now = new Date();
+                    statusEl.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-1"></i>Đồng bộ lúc ${now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}`;
+                } else {
+                    statusEl.innerHTML = `<i class="fas fa-exclamation-triangle text-amber-600 mr-1"></i>Chưa có dữ liệu`;
+                }
+            } catch (err) {
+                console.error("Lỗi xử lý phòng:", err);
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i>Lỗi xử lý dữ liệu Google Sheets`;
+            }
+        }
+
+        function loadRoomsRealtime() {
+            const statusEl = document.getElementById('room-sync-status');
+            statusEl.innerHTML = `<i class="fas fa-sync-alt fa-spin mr-1 text-blue-600"></i>Đang kết nối...`;
+
+            const oldScript = document.getElementById('gviz-room-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'gviz-room-script';
+            script.src = `https://docs.google.com/spreadsheets/d/${ROOM_SHEET_ID}/gviz/tq?tqx=responseHandler:handleRoomSheetData`;
+            script.onerror = function() {
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-1"></i>Lỗi kết nối. Hãy đảm bảo file đã chọn "Bất kỳ ai có liên kết".`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function initClassDropdown() {
+            const classSelect = document.getElementById('classFilter');
+            const currentSelected = classSelect.value;
+            
+            const classSet = new Set(allMembers.map(m => m.class).filter(c => c));
+            const sortedClasses = Array.from(classSet).sort();
+
+            classSelect.innerHTML = '<option value="">Tất cả các lớp</option>';
+            sortedClasses.forEach(cls => {
+                const opt = document.createElement('option');
+                opt.value = cls;
+                opt.textContent = `Lớp ${cls}`;
+                if (cls === currentSelected) opt.selected = true;
+                classSelect.appendChild(opt);
+            });
+        }
+
+        function updateStats(filteredData) {
+            const total = allMembers.length;
+            const assigned = allMembers.filter(m => m.room && m.room.trim() !== '').length;
+            const unassigned = total - assigned;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-assigned').textContent = assigned;
+            document.getElementById('stat-unassigned').textContent = unassigned;
+            document.getElementById('stat-showing').textContent = filteredData.length;
+        }
+
+        function renderRooms(data) {
+            const tbody = document.getElementById('roomTableBody');
+            updateStats(data);
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-medium">Không tìm thấy thành viên phù hợp</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((item, idx) => `
+                <tr class="border-b hover:bg-blue-50/50 transition">
+                    <td class="px-3 py-2.5 text-center text-xs text-slate-400">${item.stt || (idx + 1)}</td>
+                    <td class="px-4 py-2.5 font-semibold text-slate-800">${item.name}</td>
+                    <td class="px-3 py-2.5 text-xs">${item.gender === 'Nam' ? '<span class="text-blue-600 font-medium"><i class="fas fa-mars mr-1"></i>Nam</span>' : '<span class="text-pink-600 font-medium"><i class="fas fa-venus mr-1"></i>Nữ</span>'}</td>
+                    <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs font-medium border border-slate-200">${item.class}</span></td>
+                    <td class="px-3 py-2.5">${item.phone ? `<a href="tel:${item.phone}" class="text-blue-600 font-medium hover:underline flex items-center gap-1"><i class="fas fa-phone-alt text-xs"></i>${item.phone}</a>` : '<span class="text-slate-300">-</span>'}</td>
+                    <td class="px-4 py-2.5 font-bold text-center bg-blue-50 text-blue-700">${item.room ? `<span class="bg-blue-600 text-white px-2.5 py-1 rounded-md text-xs shadow-sm">${item.room}</span>` : '<span class="text-amber-500 font-normal italic text-xs">Chưa xếp</span>'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // TÌM KIẾM TỨC THÌ (GÕ ĐẾN ĐÂU KẾT QUẢ ĐẾN ĐÓ - CÓ DẤU & KHÔNG DẤU)
+        function filterRooms() {
+            const rawQuery = document.getElementById('roomSearchInput').value;
+            const normalizedQuery = removeVietnameseTones(rawQuery);
+            const selectedClass = document.getElementById('classFilter').value;
+
+            const filtered = allMembers.filter(item => {
+                // Kiểm tra từ khóa trong chuỗi không dấu chuẩn hóa
+                const matchQuery = normalizedQuery === '' || item.searchIndex.includes(normalizedQuery);
+                const matchClass = selectedClass === '' || item.class === selectedClass;
+
+                return matchQuery && matchClass;
+            });
+
+            renderRooms(filtered);
+        }
+
+        // --- 3. XỬ LÝ THÔNG TIN HỖ TRỢ REALTIME ---
+        function handleContactSheetData(json) {
+            const statusEl = document.getElementById('contact-sync-status');
+            try {
+                const rows = json.table.rows;
+                contactsData = [];
+                
+                rows.forEach((row, index) => {
+                    const c = row.c;
+                    if (c && (c[1] || c[2])) {
+                        const role = c[1] && c[1].v ? String(c[1].v).trim() : '';
+                        const name = c[2] && c[2].v ? String(c[2].v).trim() : '';
+                        const phone = c[3] && c[3].v ? String(c[3].v).trim() : '';
+                        
+                        if (name !== '' && role !== 'CHỨC DANH') {
+                            contactsData.push({ role, name, phone });
+                        }
+                    }
+                });
+
+                if (contactsData.length > 0) {
+                    renderContacts(contactsData);
+                    const now = new Date();
+                    statusEl.innerHTML = `<i class="fas fa-check-circle text-green-600"></i> Cập nhật ${now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}`;
+                } else {
+                    statusEl.innerHTML = `<i class="fas fa-exclamation-triangle text-amber-600"></i> Trống`;
+                }
+            } catch (err) {
+                console.error("Lỗi xử lý Thông tin hỗ trợ:", err);
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600"></i> Lỗi dữ liệu`;
+            }
+        }
+
+        function loadContactsRealtime() {
+            const statusEl = document.getElementById('contact-sync-status');
+            statusEl.innerHTML = `<i class="fas fa-sync-alt fa-spin text-blue-600"></i> Đang tải...`;
+
+            const oldScript = document.getElementById('gviz-contact-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'gviz-contact-script';
+            script.src = `https://docs.google.com/spreadsheets/d/${CONTACT_SHEET_ID}/gviz/tq?tqx=responseHandler:handleContactSheetData`;
+            script.onerror = function() {
+                statusEl.innerHTML = `<i class="fas fa-times-circle text-red-600"></i> Lỗi kết nối`;
+            };
+            document.body.appendChild(script);
+        }
+
+        function renderContacts(data) {
+            const container = document.getElementById('contactGrid');
+            if (!data || data.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-sm col-span-2">Chưa có thông tin hỗ trợ.</p>`;
+                return;
+            }
+
+            container.innerHTML = data.map(c => `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-blue-600 font-semibold uppercase tracking-wider">${c.role}</span>
+                        <h3 class="font-bold text-slate-800 text-base">${c.name}</h3>
+                        <p class="text-sm text-slate-600 mt-1">${c.phone ? `<i class="fas fa-phone mr-1.5 text-slate-400"></i>${c.phone}` : '<span class="text-slate-300">Chưa có SĐT</span>'}</p>
+                    </div>
+                    ${c.phone ? `
+                    <a href="tel:${c.phone}" class="bg-green-500 hover:bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow">
+                        <i class="fas fa-phone"></i>
+                    </a>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // --- 4. ĐIỀU HƯỚNG TAB VÀ MODAL ---
+        function switchTab(tab) {
+            ['timeline', 'rooms', 'contacts'].forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('active-tab');
+            });
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('active-tab');
+        }
+
+        function openMapModal() {
+            document.getElementById('mapModal').classList.remove('hidden');
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.add('hidden');
+        }
+
+        // --- KHỞI CHẠY ỨNG DỤNG ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tải dữ liệu thời gian thực cho cả 3 tab từ các file Google Sheets tương ứng
+            loadTimelineRealtime();
+            loadRoomsRealtime();
+            loadContactsRealtime();
+
+            // Tự động làm mới dữ liệu sau mỗi 30 giây
+            setInterval(() => {
+                loadTimelineRealtime();
+                loadRoomsRealtime();
+                loadContactsRealtime();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
